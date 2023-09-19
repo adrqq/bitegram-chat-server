@@ -5,11 +5,10 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const sequelize = require('sequelize');
-const passport = require('passport');
 require('dotenv').config();
 const db = require('./sequelize/models');
 
-const { router: userRouter } = require('./routes/user');
+const { router: authRouter } = require('./routes/auth-route');
 const errorMiddleware = require('./middlewares/error-middleware');
 const UserModel = require('./sequelize/models/user')(db, sequelize.DataTypes);
 
@@ -32,10 +31,9 @@ const setup = async (app) => {
     await db.sync();
     console.log('All models were synchronized successfully.');
 
-    // UserModel.create({
-    //   firstName: 'John',
-    //   lastName: 'Doe',
-    // });
+    app.use('/auth', express.json(), authRouter);
+
+    app.use(errorMiddleware);
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }
