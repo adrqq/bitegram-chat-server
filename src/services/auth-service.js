@@ -10,10 +10,36 @@ const ApiError = require('../exceptions/api-error');
 
 class AuthService {
   async login(email, password) {
-    // login logic
+    const user = await UserModel.findOne({ where: { email } });
+
+    if (!user) {
+      throw ApiError.BadRequest('User with this email not found');
+    }
+
+    const isPassEquals = await bcrypt.compare(password, user.password);
+
+    if (!isPassEquals) {
+      throw ApiError.BadRequest('Incorrect password');
+    }
+
+    const userDto = new UserDto(user);
+
+    const tokens = TokenService.generateToken({ ...userDto });
+
+    await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    if (!user.isActivated) {
+      return {
+        ...tokens,
+        ...UserDto,
+        isActivated: false,
+      }
+    }
+
+    return { ...tokens, user: userDto };
   }
 
-  async register(firstName, lastName, email, password) {
+  async register(firstName, lastName, nickname, email, password) {
     const candidate = await UserModel.findOne({ where: { email, isActivated: true } });
 
     if (candidate) {
@@ -36,10 +62,11 @@ class AuthService {
       firstName,
       lastName,
       email,
+      nickname,
       password: hash,
       isActivated: false,
       activationLink,
-    });
+    })
 
     await MailService.sendActivationMail(email, `${process.env.ENV === 'DEV' ? process.env.API_URL_DEV : process.env.API_URL_PROD}/auth/activate/${activationLink}`);
 
@@ -48,8 +75,6 @@ class AuthService {
     await TokenService.saveToken(userDto.id, tokens.refreshToken);
 
     return { ...tokens, user: userDto };
-
-    return user;
   }
 
   async activate(activationLink) {
