@@ -1,8 +1,7 @@
 const express = require('express');
-// const cookieSession = require('cookie-session');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-const cors = require('cors');
+const cors = require('cors'); // Import the cors middleware
 const helmet = require('helmet');
 const sequelize = require('sequelize');
 require('dotenv').config();
@@ -16,13 +15,16 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+
+// Configure CORS to allow requests from 'http://localhost:3000'
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true // Allow credentials (e.g., cookies) to be sent with the request
+}));
+
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(cookieSession({
-//   name: 'session',
-// }));
 
 const setup = async (app) => {
   try {
