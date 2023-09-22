@@ -35,13 +35,13 @@ class AuthController {
       } = req.body;
 
       if (!firstName || !lastName || !email || !password || !nickname) {
-        return next(ApiError.BadRequest('Some fields are empty'));
+        return next(ApiError.BadRequest(`Some fields are empty ${firstName} ${lastName} ${email} ${password} ${nickname}}`));
       }
 
       console.log(nickname);
 
       const userData = await AuthService.register(firstName, lastName, nickname, email, password);
-      
+
       res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
 
       return res.json(userData);

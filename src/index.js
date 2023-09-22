@@ -1,9 +1,13 @@
 const app = require('./app');
-const { PORT } = require('./config');
+const {
+  PORT,
+  HOST,
+  API_URL,
+} = require('./config');
 
 try {
-  app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`Server is running on ${API_URL}`);
   });
 } catch (err) {
   console.log(err)

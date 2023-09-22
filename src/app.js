@@ -15,23 +15,28 @@ const app = express();
 
 // Middleware
 app.use(helmet());
-
-// Configure CORS to allow requests from 'http://localhost:3000'
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true // Allow credentials (e.g., cookies) to be sent with the request
-}));
-
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const setup = async (app) => {
+// Configure CORS to allow requests from 'http://localhost:3000'
+app.use(cors({
+  origin: process.env.ENV === 'DEV' ? '*' : process.env.API_URL_PROD,
+  credentials: true // Allow credentials (e.g., cookies) to be sent with the request
+}));
+
+const setup = (async (app) => {
   try {
-    await db.authenticate();
-    console.log('Connection has been established successfully.');
-    await db.sync();
-    console.log('All models were synchronized successfully.');
+    // await db.authenticate({ logging: false });
+    // console.log('Connection has been established successfully.');
+
+    // await db.sync({ force: true });
+    // console.log('All models were synchronized successfully.');
+
+    app.get('/', (req, res) => {
+      res.status(200);
+      res.send(`<h1>Welcome to bitegram server root "/"</h1>`);
+    });
 
     app.use('/auth', express.json(), authRouter);
 
@@ -39,8 +44,6 @@ const setup = async (app) => {
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }
-}
-
-setup(app);
+})(app);
 
 module.exports = app;
