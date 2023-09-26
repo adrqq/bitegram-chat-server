@@ -7,8 +7,9 @@ module.exports = {
   PORT: process.env.ENV === 'DEV' ? process.env.PORT_DEV : process.env.PORT_PROD,
   HOST: process.env.ENV === 'DEV' ? process.env.HOST_DEV : process.env.HOST_PROD,
 
-  // API
+  // URL
   API_URL: process.env.ENV === 'DEV' ? process.env.API_URL_DEV : process.env.API_URL_PROD,
+  CLIENT_URL: (process.env.ENV === 'DEV' ? process.env.CLIENT_URL_DEV : process.env.CLIENT_URL_PROD) || 'http://localhost:3000',
 
   // DB
   DATABASE_URL: process.env.DATABASE_URL,

@@ -8,6 +8,11 @@ const UserDto = require('../dtos/user-dto');
 const TokenService = require('./token-service');
 const ApiError = require('../exceptions/api-error');
 
+
+const {
+  API_URL
+} = require('../config');
+
 class AuthService {
   async login(email, password) {
     const user = await UserModel.findOne({ where: { email } });
@@ -31,8 +36,10 @@ class AuthService {
     if (!user.isActivated) {
       return {
         ...tokens,
-        ...UserDto,
-        isActivated: false,
+        user: {
+          ...userDto,
+          isActivated: false,
+        },
       }
     }
 
@@ -99,6 +106,57 @@ class AuthService {
     const users = UserModel.findAll();
 
     return users;
+  }
+
+  async sendActivationLink(email) {
+    const user = await UserModel.findOne({ where: { email } });
+
+    if (!user) {
+      throw ApiError.BadRequest('User with this email not found');
+    }
+
+    if (user.isActivated) {
+      throw ApiError.BadRequest('User with this email already activated');
+    }
+
+    const activationLink = uuid.v4();
+
+    user.activationLink = activationLink;
+
+    await user.save();
+
+    await MailService.sendActivationMail(email, `${API_URL}/auth/activate/${activationLink}`);
+
+    return activationLink;
+  }
+
+  async refresh(refreshToken) {
+    if (!refreshToken) {
+      console.log('refreshToken', refreshToken);
+      throw ApiError.UnauthorizedError();
+    }
+
+    const userData = TokenService.validateRefreshToken(refreshToken);
+    const tokenFromDb = await TokenService.findToken(refreshToken);
+
+    if (!userData || !tokenFromDb) {
+      throw ApiError.UnauthorizedError();
+    }
+
+    const user = await UserModel.findOne({ where: { id: userData.id } });
+
+    if (!user.Activated) {
+
+      return user.email;
+      // throw ApiError.BadRequest('User with this email not activated');
+    }
+
+    const userDto = new UserDto(user);
+    const tokens = TokenService.generateToken({ ...userDto });
+
+    await TokenService.saveToken(userDto.id, tokens.refreshToken);
+
+    return { ...tokens, user: userDto };
   }
 }
 
