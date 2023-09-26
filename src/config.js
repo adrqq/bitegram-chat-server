@@ -1,7 +1,7 @@
 
 module.exports = {
   // Environment
-  ENV: process.env.ENV,
+  ENV: process.env.ENV || 'DEV',
 
   // HOST
   PORT: process.env.ENV === 'DEV' ? process.env.PORT_DEV : process.env.PORT_PROD,
@@ -9,6 +9,7 @@ module.exports = {
 
   // API
   API_URL: process.env.ENV === 'DEV' ? process.env.API_URL_DEV : process.env.API_URL_PROD,
+  CLIENT_URL: process.env.ENV === 'DEV' ? process.env.CLIENT_URL_DEV : process.env.CLIENT_URL_PROD,
 
   // DB
   DATABASE_URL: process.env.DATABASE_URL,

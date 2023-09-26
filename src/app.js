@@ -11,6 +11,10 @@ const { router: authRouter } = require('./routes/auth-route');
 const errorMiddleware = require('./middlewares/error-middleware');
 const UserModel = require('./sequelize/models/user')(db, sequelize.DataTypes);
 
+const {
+  CLIENT_URL,
+} = require('./config');
+
 const app = express();
 
 // Middleware
@@ -21,7 +25,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configure CORS to allow requests from 'http://localhost:3000'
 app.use(cors({
-  origin: process.env.ENV === 'DEV' ? '*' : process.env.API_URL_PROD,
+  origin: CLIENT_URL,
   credentials: true // Allow credentials (e.g., cookies) to be sent with the request
 }));
 
