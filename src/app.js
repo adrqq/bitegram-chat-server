@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-const cors = require('cors'); // Import the cors middleware
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const sequelize = require('sequelize');
 require('dotenv').config();
@@ -19,6 +20,7 @@ const app = express();
 
 // Middleware
 app.use(helmet());
+app.use(cookieParser());
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

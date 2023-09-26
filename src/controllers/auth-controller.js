@@ -2,6 +2,10 @@ const { validationResult } = require('express-validator');
 const AuthService = require('../services/auth-service');
 const ApiError = require('../exceptions/api-error');
 
+const {
+  CLIENT_URL
+} = require('../config');
+
 class AuthController {
   async login(req, res, next) {
     try {
@@ -55,9 +59,7 @@ class AuthController {
       const activationLink = req.params.link;
       await AuthService.activate(activationLink);
 
-      // return res.redirect(`${process.env.CLIENT_URL}`);
-
-      res.send({ message: 'User successfully activated' });
+      return res.redirect(`${CLIENT_URL}`);
     } catch (e) {
       next(ApiError.Internal(e));
     }
@@ -68,6 +70,34 @@ class AuthController {
       const users = await AuthService.getAllUsers();
 
       res.send(users);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async sendActivationLink(req, res, next) {
+    try {
+      const { email } = req.body;
+
+      await AuthService.sendActivationLink(email);
+
+      return res.json('Activation link has been sent to your email');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async refresh(req, res, next) {
+    try {
+      const { refreshToken } = req.cookies;
+
+      console.log(`refreshToken`, refreshToken)
+
+      const userData = await AuthService.refresh(refreshToken);
+
+      res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+
+      return res.json(userData);
     } catch (e) {
       next(e);
     }
