@@ -12,11 +12,11 @@ class AuthController {
       const { email, password } = req.body;
       const userData = await AuthService.login(email, password);
 
-      res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+      res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'none', secure: true });
 
+      // res.setHeader('Set-Cookie', `refreshToken=${userData.refreshToken}; Max-Age=2592000; Path=/; HttpOnly; SameSite=None;`);
 
-      console.log(userData);
-      return res.json(userData);
+      return res.json(userData);  
     } catch (e) {
       next(ApiError.Internal(e));
     }

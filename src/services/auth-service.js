@@ -52,12 +52,17 @@ class AuthService {
     if (candidate) {
       throw ApiError.BadRequest(`User with email ${email} already exists`);
     }
+    
+    if (nickname.findOne({ where: { nickname } })) {
+      throw ApiError.BadRequest(`User with nickname ${nickname} already exists`);
+    }
 
     const candidateNotActivated = await UserModel.findOne({ where: { email, isActivated: false } });
 
     if (candidateNotActivated) {
       UserModel.destroy({ where: { email } });
     }
+
 
     const activationLink = uuid.v4();
 
@@ -132,7 +137,7 @@ class AuthService {
 
   async refresh(refreshToken) {
     if (!refreshToken) {
-      console.log('refreshToken', refreshToken);
+      // console.log('refreshToken', refreshToken);
       throw ApiError.UnauthorizedError();
     }
 
