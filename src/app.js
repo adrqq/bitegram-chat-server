@@ -1,19 +1,19 @@
 const express = require('express');
+require('dotenv').config();
+const { CLIENT_URL, PORT } = require('./config');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const sequelize = require('sequelize');
-require('dotenv').config();
 const db = require('./sequelize/models');
+const { io: userSockets } = require('./socketio/user-sockets');
 
 const { router: authRouter } = require('./routes/auth-route');
 const { router: userRouter } = require('./routes/user-route');
 const errorMiddleware = require('./middlewares/error-middleware');
 const UserModel = require('./sequelize/models/user')(db, sequelize.DataTypes);
-
-const { CLIENT_URL } = require('./config');
 
 const app = express();
 
@@ -24,28 +24,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configure CORS to allow requests from 'http://localhost:3000'
-// app.use(
-//   cors({
-//     origin: CLIENT_URL,
-//     credentials: true, // Allow credentials (e.g., cookies) to be sent with the request
-//   })
-// );
+app.use(
+  cors({
+    origin: CLIENT_URL,
+    credentials: true,
+  })
+);
 
-const setup = (async (app) => {
+const setup = async (app) => {
   try {
-    // await db.authenticate({ logging: false });
-    // console.log('Connection has been established successfully.');
+    await UserModel.sync({ alter: true });
 
-    // await db.sync({ force: true });
-    // console.log('All models were synchronized successfully.');
-
-    app.use(cookieParser());
-    app.use(
-      cors({
-        origin: CLIENT_URL,
-        credentials: true,
-      })
-    );
+    await app.use(cookieParser());
 
     app.get('/', (req, res) => {
       res.status(200);
@@ -59,6 +49,8 @@ const setup = (async (app) => {
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }
-})(app);
+};
 
-module.exports = app;
+setup(app);
+
+module.exports = { app }; // Export app and io

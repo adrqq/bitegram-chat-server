@@ -18,7 +18,7 @@ class AuthController {
 
       return res.json(userData);  
     } catch (e) {
-      next(ApiError.Internal(e));
+      next(e);
     }
   }
 
@@ -91,13 +91,27 @@ class AuthController {
     try {
       const { refreshToken } = req.cookies;
 
-      console.log(`refreshToken`, refreshToken)
-
       const userData = await AuthService.refresh(refreshToken);
 
-      res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+      res.cookie('refreshToken', userData.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'none', secure: true });
 
       return res.json(userData);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async logout(req, res, next) {
+    try {
+      const { refreshToken } = req.cookies;
+
+      console.log(refreshToken);
+
+      const token = await AuthService.logout(refreshToken);
+
+      res.clearCookie('refreshToken');
+
+      return res.json(token);
     } catch (e) {
       next(e);
     }

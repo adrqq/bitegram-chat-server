@@ -43,6 +43,24 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    bio: {
+      type: DataTypes.STRING,
+    },
+    profilePicture: {
+      type: DataTypes.STRING,
+    },
+    incomingFriendRequests: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+    },
+    outgoingFriendRequests: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+    },
+    friends: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: ['Lol'],
+    },
   }, {
     sequelize,
     modelName: 'User',

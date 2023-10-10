@@ -19,6 +19,12 @@ router.post(
   body('password').isLength({ min: 6, max: 32 }),
   AuthController.register
 );
+router.post(
+  '/logout',
+  cookie('refreshToken').isString().isLength({ min: 1 }),
+  AuthController.logout
+);
+
 router.get(
   '/activate/:link', 
   param('link').isString(),

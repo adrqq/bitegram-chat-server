@@ -8,4 +8,17 @@ router.get(
   UserController.searchUsers,
 );
 
+router.get(
+  '/:userId',
+  body('userId').isString(),
+  UserController.getUserById,
+);
+
+router.post(
+  '/send-friend-request',
+  body('friendId').isString(),
+  UserController.sendFriendRequest,
+);
+
+
 module.exports = { router };

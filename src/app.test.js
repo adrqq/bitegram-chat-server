@@ -43,4 +43,20 @@ describe('Test the /user/search path', () => {
         ]);
       });
   });
+
+  test('if user is not found, it should return error', async () => {
+    return request(app)
+      .get('/user/:userId')
+      .then((response) => {
+        expect(response.statusCode).toBe(500);
+      });
+  });
+
+  test('if user is found, it should return error', async () => {
+    return request(app)
+      .get('/user/:userId')
+      .then((response) => {
+        expect(response.statusCode).toBe(500);
+      });
+  });
 });
