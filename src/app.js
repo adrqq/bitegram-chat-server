@@ -33,8 +33,8 @@ app.use(cors({
 
 const setup = (async (app) => {
   try {
-    // await db.authenticate({ logging: false });
-    // console.log('Connection has been established successfully.');
+    await db.authenticate({ logging: false });
+    console.log('Connection has been established successfully.');
 
     // await db.sync({ force: true });
     // console.log('All models were synchronized successfully.');
