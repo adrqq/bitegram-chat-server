@@ -4,11 +4,14 @@ const ApiError = require('../exceptions/api-error');
 class UserController {
   async searchUsers(req, res, next) {
     try {
-      const { searchQuery } = req.query;
+      const { searchQuery, userId } = req.query;
 
-      const users = await UserService.searchUsers(searchQuery);
+      console.log(`searchQuery: ${searchQuery}, userId: ${userId}`)
+
+      const users = await UserService.searchUsers(searchQuery, userId);
 
       return res.json(users);
+
     } catch (e) {
       next(e);
     }
@@ -16,7 +19,9 @@ class UserController {
 
   async getUserById(req, res, next) {
     try {
-      const { userId } = req.params;
+      const { userId } = req.query;
+
+      console.log(`userId: ${userId}`);
   
       if (!userId) {
         return res.status(404).json({ message: 'User not found' }); // 404 for "User not found"
@@ -43,6 +48,20 @@ class UserController {
       const user = await UserService.sendFriendRequest(userId, friendId);
 
       return res.send(user);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  async checkFriendStatus(req, res, next) {
+    try {
+      const { userId, friendId } = req.query;
+
+      console.log(`userId: ${userId}, friendId: ${friendId}`);
+
+      const status = await UserService.checkFriendStatus(userId, friendId);
+
+      return res.send(status);
     } catch (e) {
       next(e);
     }

@@ -9,10 +9,17 @@ router.get(
 );
 
 router.get(
-  '/:userId',
+  '/get-user-by-id',
   body('userId').isString(),
   UserController.getUserById,
 );
+
+router.get(
+  '/check-friend-status',
+  body('friendId').isString(),
+  body('userId').isString(),
+  UserController.checkFriendStatus,
+)
 
 router.post(
   '/send-friend-request',

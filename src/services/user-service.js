@@ -5,18 +5,30 @@ const UserModel = require('../sequelize/models/user')(db, sequelize.DataTypes);
 const ApiError = require('../exceptions/api-error');
 
 class UserService {
-  async searchUsers(searchQuery) {
+  async searchUsers(searchQuery, userId) {
     if (!searchQuery) {
       return [];
     }
-
     // Convert the search query to lowercase for case-insensitive search
     const searchQueryLower = searchQuery.toLowerCase();
 
+    // const searchResults = await UserModel.findAll({
+    //   attributes: ['nickname', 'id'],
+    //   limit: 12,
+
+
+    // })
+
     const searchResults = await UserModel.findAll({
       attributes: ['nickname', 'id'],
+      where: {
+        id: {
+          [sequelize.Op.ne]: userId // Exclude the user with the provided userId
+        },
+      },
       limit: 12,
-    })
+    });
+  
 
     // Filter and save users with a 50% or higher match based on Levenshtein distance
     const filteredUsers = searchResults.filter((user) => {
@@ -60,7 +72,6 @@ class UserService {
       });
     }
 
-    try {
       if (!userId) {
         if (!userId) {
           throw ApiError.BadRequest(`Invalid userId of ${userId}`);
@@ -98,11 +109,47 @@ class UserService {
       await Promise.all([foundFriend.save(), user.save()]);
   
       return 'Friend request sent';
-    } catch (error) {
-      throw error;
-    }
+
   }
   
+  async checkFriendStatus(userId, friendId) {
+    async function findUserById(id) {
+      return await UserModel.findOne({
+        where: { id },
+      });
+    }
+
+    if (!userId) {
+      throw ApiError.BadRequest(`Invalid userId of ${userId}`);
+    }
+
+    if (!friendId) {
+      throw ApiError.BadRequest(`Invalid friendId of ${friendId}`);
+    }
+
+    const [user, friend] = await Promise.all([
+      findUserById(userId),
+      findUserById(friendId),
+    ]);
+
+    if (!user || !friend) {
+      throw ApiError.BadRequest('User not found');
+    }
+
+    if (user.friends && user.friends.includes(friendId)) {
+      return 'FRIEND';
+    }
+
+    if (user.incomingFriendRequests && user.incomingFriendRequests.includes(friendId)) {
+      return 'FRIEND_REQUEST_RECEIVED';
+    }
+    
+    if (user.outgoingFriendRequests && user.outgoingFriendRequests.includes(friendId)) {
+      return 'FRIEND_REQUEST_SENT';
+    }
+
+    return 'NOT_FRIEND';
+  }
 }
 
 module.exports = new UserService();
