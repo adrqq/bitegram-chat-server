@@ -52,12 +52,17 @@ class AuthService {
     if (candidate) {
       throw ApiError.BadRequest(`User with email ${email} already exists`);
     }
+    
+    if (nickname.findOne({ where: { nickname } })) {
+      throw ApiError.BadRequest(`User with nickname ${nickname} already exists`);
+    }
 
     const candidateNotActivated = await UserModel.findOne({ where: { email, isActivated: false } });
 
     if (candidateNotActivated) {
       UserModel.destroy({ where: { email } });
     }
+
 
     const activationLink = uuid.v4();
 
@@ -132,12 +137,14 @@ class AuthService {
 
   async refresh(refreshToken) {
     if (!refreshToken) {
-      console.log('refreshToken', refreshToken);
       throw ApiError.UnauthorizedError();
     }
 
     const userData = TokenService.validateRefreshToken(refreshToken);
     const tokenFromDb = await TokenService.findToken(refreshToken);
+
+    console.log(`userData: ${userData}`);
+    console.log(`tokenFromDb: ${tokenFromDb}`);
 
     if (!userData || !tokenFromDb) {
       throw ApiError.UnauthorizedError();
@@ -145,10 +152,10 @@ class AuthService {
 
     const user = await UserModel.findOne({ where: { id: userData.id } });
 
-    if (!user.Activated) {
+    if (!user.isActivated) {
+      console.log('User with this email not activated');
 
       return user.email;
-      // throw ApiError.BadRequest('User with this email not activated');
     }
 
     const userDto = new UserDto(user);
@@ -157,6 +164,16 @@ class AuthService {
     await TokenService.saveToken(userDto.id, tokens.refreshToken);
 
     return { ...tokens, user: userDto };
+  }
+
+  async logout(refreshToken) {
+    if (!refreshToken) {
+      throw ApiError.UnauthorizedError();
+    }
+
+    const token = await TokenService.removeToken(refreshToken);
+
+    return token;
   }
 }
 
