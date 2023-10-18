@@ -28,7 +28,7 @@ class UserService {
       },
       limit: 12,
     });
-  
+
 
     // Filter and save users with a 50% or higher match based on Levenshtein distance
     const filteredUsers = searchResults.filter((user) => {
@@ -64,7 +64,7 @@ class UserService {
 
     return user;
   }
-  
+
   async sendFriendRequest(userId, friendId) {
     async function findUserById(id) {
       return await UserModel.findOne({
@@ -72,46 +72,46 @@ class UserService {
       });
     }
 
+    if (!userId) {
       if (!userId) {
-        if (!userId) {
-          throw ApiError.BadRequest(`Invalid userId of ${userId}`);
-        }
-        
-        if (!friendId) {
-          throw ApiError.BadRequest(`Invalid friendId of ${friendId}`);
-        }
+        throw ApiError.BadRequest(`Invalid userId of ${userId}`);
       }
-  
-      const [user, foundFriend] = await Promise.all([
-        findUserById(userId),
-        findUserById(friendId),
-      ]);
-  
-      if (!user || !foundFriend) {
-        throw ApiError.BadRequest('User not found');
+
+      if (!friendId) {
+        throw ApiError.BadRequest(`Invalid friendId of ${friendId}`);
       }
-  
-      if (user.friends && user.friends.includes(friendId)) {
-        throw ApiError.BadRequest(`You are already friends with ${foundFriend.nickname}`);
-      }
-  
-      if (foundFriend.incomingFriendRequests && foundFriend.incomingFriendRequests.includes(userId)) {
-        throw ApiError.BadRequest(`You have already sent a friend request to ${foundFriend.nickname}`);
-      }
-  
-      if (user.incomingFriendRequests && user.incomingFriendRequests.includes(friendId)) {
-        throw ApiError.BadRequest(`You have already received a friend request from ${foundFriend.nickname}`);
-      }
-  
-      foundFriend.incomingFriendRequests = foundFriend.incomingFriendRequests ? [...foundFriend.incomingFriendRequests, userId] : [userId];
-      user.outgoingFriendRequests = user.outgoingFriendRequests ? [...user.outgoingFriendRequests, friendId] : [friendId];
-  
-      await Promise.all([foundFriend.save(), user.save()]);
-  
-      return 'Friend request sent';
+    }
+
+    const [user, foundFriend] = await Promise.all([
+      findUserById(userId),
+      findUserById(friendId),
+    ]);
+
+    if (!user || !foundFriend) {
+      throw ApiError.BadRequest('User not found');
+    }
+
+    if (user.friends && user.friends.includes(friendId)) {
+      throw ApiError.BadRequest(`You are already friends with ${foundFriend.nickname}`);
+    }
+
+    if (foundFriend.incomingFriendRequests && foundFriend.incomingFriendRequests.includes(userId)) {
+      throw ApiError.BadRequest(`You have already sent a friend request to ${foundFriend.nickname}`);
+    }
+
+    if (user.incomingFriendRequests && user.incomingFriendRequests.includes(friendId)) {
+      throw ApiError.BadRequest(`You have already received a friend request from ${foundFriend.nickname}`);
+    }
+
+    foundFriend.incomingFriendRequests = foundFriend.incomingFriendRequests ? [...foundFriend.incomingFriendRequests, userId] : [userId];
+    user.outgoingFriendRequests = user.outgoingFriendRequests ? [...user.outgoingFriendRequests, friendId] : [friendId];
+
+    await Promise.all([foundFriend.save(), user.save()]);
+
+    return 'Friend request sent';
 
   }
-  
+
   async checkFriendStatus(userId, friendId) {
     async function findUserById(id) {
       return await UserModel.findOne({
@@ -143,12 +143,65 @@ class UserService {
     if (user.incomingFriendRequests && user.incomingFriendRequests.includes(friendId)) {
       return 'FRIEND_REQUEST_RECEIVED';
     }
-    
+
     if (user.outgoingFriendRequests && user.outgoingFriendRequests.includes(friendId)) {
       return 'FRIEND_REQUEST_SENT';
     }
 
     return 'NOT_FRIEND';
+  }
+
+  async acceptFriendRequest(userId, friendId) {
+    try {
+      if (!userId) {
+        throw ApiError.BadRequest(`Invalid userId of ${userId}`);
+      }
+
+      if (!friendId) {
+        throw ApiError.BadRequest(`Invalid friendId of ${friendId}`);
+      }
+
+      const [user, friend] = await Promise.all([
+        UserModel.findOne({
+          where: { id: userId },
+        }),
+        UserModel.findOne({
+          where: { id: friendId },
+        }),
+      ]);
+
+      if (!user || !friend) {
+        throw ApiError.BadRequest('User not found');
+      }
+
+      if (user.friends && user.friends.includes(friendId)) {
+        throw ApiError.BadRequest(`You are already friends with ${friend.nickname}`);
+      }
+
+      if (friend.friends && friend.friends.includes(userId)) {
+        throw ApiError.BadRequest(`You are already friends with ${user.nickname}`);
+      }
+
+      if (user.incomingFriendRequests && !user.incomingFriendRequests.includes(friendId)) {
+        throw ApiError.BadRequest(`You have not received a friend request from ${friend.nickname}`);
+      }
+
+      if (friend.outgoingFriendRequests && !friend.outgoingFriendRequests.includes(userId)) {
+        throw ApiError.BadRequest(`You have not sent a friend request to ${user.nickname}`);
+      }
+
+      user.incomingFriendRequests = user.incomingFriendRequests.filter((id) => id !== friendId);
+      friend.outgoingFriendRequests = friend.outgoingFriendRequests.filter((id) => id !== userId);
+
+      user.friends = user.friends ? [...user.friends, friendId] : [friendId];
+      friend.friends = friend.friends ? [...friend.friends, userId] : [userId];
+
+      await Promise.all([user.save(), friend.save()]);
+
+      return user;
+    } catch (e) {
+      // throw ApiError.BadRequest(e.message);
+    }
   }
 }
 
