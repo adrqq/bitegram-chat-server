@@ -107,9 +107,10 @@ class UserService {
       user.outgoingFriendRequests = user.outgoingFriendRequests ? [...user.outgoingFriendRequests, friendId] : [friendId];
   
       await Promise.all([foundFriend.save(), user.save()]);
+
+      const updatedUserDTO = new UserDTO(user);
   
       return 'Friend request sent';
-
   }
   
   async checkFriendStatus(userId, friendId) {

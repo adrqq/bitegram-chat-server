@@ -59,7 +59,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     friends: {
       type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: ['Lol'],
+      defaultValue: [],
     },
   }, {
     sequelize,

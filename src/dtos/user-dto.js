@@ -5,6 +5,8 @@ module.exports = class UserDto {
   nickname;
   email;
   isActivated;
+  incomingFriendRequests;
+  outgoingFriendRequests;
 
   constructor(model) {
     this.id = model.id;
@@ -13,5 +15,6 @@ module.exports = class UserDto {
     this.nickname = model.nickname;
     this.email = model.email;
     this.isActivated = model.isActivated;
+
   }
 }
