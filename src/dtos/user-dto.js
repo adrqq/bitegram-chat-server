@@ -7,6 +7,7 @@ module.exports = class UserDto {
   isActivated;
   bio;
   profilePicture;
+  outgoingFriendRequests;
   incomingFriendRequests;
   friends;
 
@@ -19,6 +20,7 @@ module.exports = class UserDto {
     this.isActivated = model.isActivated;
     this.bio = model.bio;
     this.profilePicture = model.profilePicture;
+    this.outgoingFriendRequests = model.outgoingFriendRequests;
     this.incomingFriendRequests = model.incomingFriendRequests;
     this.friends = model.friends;
   }
