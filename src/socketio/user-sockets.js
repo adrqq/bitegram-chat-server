@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
   socket.on('testSocket', async () => {
     console.log('testSocket');
 
-    io.emit('testSocket', { message: 'testSocket' });
+    socket.broadcast.emit('testSocket', { message: 'testSocket' });
   });
 });
 
