@@ -2,25 +2,34 @@ const { io } = require('../socketio');
 const sequelize = require('sequelize');
 const UserService = require('../services/user-service');
 
+const users = {};
+
 io.on('connection', (socket) => {
-  console.log('connected user with id: ', socket.id);
+  const userId = socket.handshake.query.userId;
 
-  // socket.on('addFriend', async (data) => {
-  //   const { userId, friendId } = data;
+  console.log('connected user with id: ', userId);
 
-  //   console.table({ userId, friendId });
-  //   console.table(socket.rooms);
+  users[userId] = socket;
 
-  //   // socket.join(friendId);
-  //   // socket.join(userId);
+  socket.on('addFriend', async (data) => {
+    const { userId, friendId } = data;
 
-  //   await UserService.sendFriendRequest(userId, friendId)
-  //     .then(() => {
-  //       // io.to(userId).emit('friendRequestSent', { userId, friendId });
+    // console.table({ userId, friendId });
+    console.table(friendId  );
 
-  //       io.emit('friendRequestSent', { userId, friendId });
-  //     })
-  // });
+    if (!users[friendId]) {
+      // users[friendId].emit('newFriendRequest', { userId, friendId });
+
+      return;
+    }
+
+    await UserService.sendFriendRequest(userId, friendId)
+      .then(() => {
+        users[userId].emit('friendRequestSent');
+ 
+        users[friendId].emit('friendRequestSent');
+      })
+  });
 
   // socket.on('acceptFriendRequest', async (data) => {
   //   const { userId, friendId } = data;
@@ -38,7 +47,7 @@ io.on('connection', (socket) => {
   socket.on('testSocket', async () => {
     console.log('testSocket');
 
-    socket.broadcast.emit('testSocket', { message: 'testSocket' });
+    io.emit('testSocket', { message: 'testSocket' });
   });
 });
 

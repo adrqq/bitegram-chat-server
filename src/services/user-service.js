@@ -110,8 +110,8 @@ class UserService {
       await Promise.all([foundFriend.save(), user.save()]);
 
       return 'Friend request sent';
-    } catch {
-      throw ApiError.BadRequest(e.message);
+    } catch(e) {
+      return e.message;
     }
   }
 
