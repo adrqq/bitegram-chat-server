@@ -57,7 +57,7 @@ io.on('connection', (socket) => {
     const user = await UserService.acceptFriendRequest(userId, friendId);
 
     users[userId].emit('friendRequestAccepted', { userId, friendId });
-    users[friendId].emit('friendRequestAccepted', { userId: friendId, friendId: userId });
+    users[friendId].emit('friendRequestAccepted', { userId, friendId });
   });
 });
 

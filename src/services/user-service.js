@@ -54,7 +54,10 @@ class UserService {
       where: {
         id: userId,
       },
-      // attributes: ['id', 'firstName', 'lastName', 'nickname', 'email'],
+      // all of the attributes
+      attributes: {
+        exclude: [],
+      },
     });
 
     if (!user) {
