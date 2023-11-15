@@ -2,24 +2,51 @@ const { io } = require('../socketio');
 const sequelize = require('sequelize');
 const UserService = require('../services/user-service');
 
+const users = {};
+
 io.on('connection', (socket) => {
-  console.log('connected user with id: ', socket.id);
+  const userId = socket.handshake.query.userId;
+
+  console.log('connected user with id: ', userId);
+
+  users[userId] = socket;
 
   socket.on('addFriend', async (data) => {
     const { userId, friendId } = data;
 
     console.table({ userId, friendId });
-    console.table(socket.rooms);
 
-    // socket.join(friendId);
-    // socket.join(userId);
+    if (!users[friendId]) {
+      // users[friendId].emit('newFriendRequest', { userId, friendId });
+
+      return;
+    }
 
     await UserService.sendFriendRequest(userId, friendId)
       .then(() => {
-        // io.to(userId).emit('friendRequestSent', { userId, friendId });
+        users[userId].emit('friendRequestSent', { userId, friendId });
 
-        io.emit('friendRequestSent', { userId, friendId });
+        users[friendId].emit('newFriendRequest', { userId, friendId });
       })
+  });
+
+  socket.on('deleteFriend', async (data) => {
+    const { userId, friendId } = data;
+
+    console.table({ userId, friendId });
+
+    await UserService.deleteFriend(userId, friendId)
+      .then(() => {
+        users[userId].emit('friendDeleted', { userId, friendId });
+
+        users[friendId].emit('friendDeleted', { userId, friendId });
+      })
+  });
+
+  socket.on('testSocket', async () => {
+    console.log('testSocket');
+
+    io.emit('testSocket', { message: 'testSocket' });
   });
 
   socket.on('acceptFriendRequest', async (data) => {
@@ -27,19 +54,11 @@ io.on('connection', (socket) => {
 
     console.table({ userId, friendId });
 
-    socket.join(userId);
-    socket.join(friendId);
-
     const user = await UserService.acceptFriendRequest(userId, friendId);
 
-    io.to(userId).emit('friendRequestAccepted', { userId, friendId });
+    users[userId].emit('friendRequestAccepted', { userId, friendId });
+    users[friendId].emit('friendRequestAccepted', { userId: friendId, friendId: userId });
   });
-
-  // socket.on('testSocket', async () => {
-  //   console.log('testSocket');
-
-  //   socket.broadcast.emit('testSocket', { message: 'testSocket' });
-  // });
 });
 
 module.exports = { io };

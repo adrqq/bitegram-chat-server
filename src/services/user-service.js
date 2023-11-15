@@ -54,7 +54,7 @@ class UserService {
       where: {
         id: userId,
       },
-      attributes: ['id', 'firstName', 'lastName', 'nickname', 'email'],
+      // attributes: ['id', 'firstName', 'lastName', 'nickname', 'email'],
     });
 
     if (!user) {
@@ -110,8 +110,8 @@ class UserService {
       await Promise.all([foundFriend.save(), user.save()]);
 
       return 'Friend request sent';
-    } catch {
-      throw ApiError.BadRequest(e.message);
+    } catch (e) {
+      return e.message;
     }
   }
 
@@ -202,6 +202,48 @@ class UserService {
       await Promise.all([user.save(), friend.save()]);
 
       return user;
+    } catch (e) {
+      // throw ApiError.BadRequest(e.message);
+    }
+  }
+
+  async deleteFriend(userId, friendId) {
+    try {
+      if (!userId) {
+        throw ApiError.BadRequest(`Invalid userId of ${userId}`);
+      }
+
+      if (!friendId) {
+        throw ApiError.BadRequest(`Invalid friendId of ${friendId}`);
+      }
+
+      const [user, friend] = await Promise.all([
+        UserModel.findOne({
+          where: { id: userId },
+        }),
+        UserModel.findOne({
+          where: { id: friendId },
+        }),
+      ]);
+
+      if (!user || !friend) {
+        throw ApiError.BadRequest('User not found');
+      }
+
+      if (user.friends && !user.friends.includes(friendId)) {
+        throw ApiError.BadRequest(`You are not friends with ${friend.nickname}`);
+      }
+
+      if (friend.friends && !friend.friends.includes(userId)) {
+        throw ApiError.BadRequest(`You are not friends with ${user.nickname}`);
+      }
+
+      user.friends = user.friends.filter((id) => id !== friendId);
+      friend.friends = friend.friends.filter((id) => id !== userId);
+
+      await Promise.all([user.save(), friend.save()]);
+
+      return 'Friend deleted';
     } catch (e) {
       // throw ApiError.BadRequest(e.message);
     }
