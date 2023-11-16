@@ -10,6 +10,8 @@ module.exports = class UserDto {
   outgoingFriendRequests;
   incomingFriendRequests;
   friends;
+  chats;
+  groups;
 
   constructor(model) {
     this.id = model.id;
@@ -23,5 +25,7 @@ module.exports = class UserDto {
     this.outgoingFriendRequests = model.outgoingFriendRequests;
     this.incomingFriendRequests = model.incomingFriendRequests;
     this.friends = model.friends;
+    this.chats = model.chats;
+    this.groups = model.groups;
   }
 }

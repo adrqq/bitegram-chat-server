@@ -13,7 +13,8 @@ const { io: userSockets } = require('./socketio/user-sockets');
 const { router: authRouter } = require('./routes/auth-route');
 const { router: userRouter } = require('./routes/user-route');
 const errorMiddleware = require('./middlewares/error-middleware');
-const UserModel = require('./sequelize/models/user')(db, sequelize.DataTypes);
+const UserModel = require('./sequelize/models/user-model')(db, sequelize.DataTypes);
+const ChatModel = require('./sequelize/models/chat-model')(db, sequelize.DataTypes);
 
 const app = express();
 
@@ -33,9 +34,10 @@ app.use(
 
 const setup = async (app) => {
   try {
-    await UserModel.sync({ alter: true });
+    // Sync models
 
-    await app.use(cookieParser());
+    ChatModel.sync({ alter: true });
+    UserModel.sync({ alter: true });
 
     app.get('/', (req, res) => {
       res.status(200);

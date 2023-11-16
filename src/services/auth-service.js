@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const uuid = require('uuid');
 const sequelize = require('sequelize');
 const db = require('../sequelize/models');
-const UserModel = require('../sequelize/models/user')(db, sequelize.DataTypes);
+const UserModel = require('../sequelize/models/user-model')(db, sequelize.DataTypes);
 const MailService = require('./mail-service');
 const UserDto = require('../dtos/user-dto');
 const TokenService = require('./token-service');
@@ -53,7 +53,7 @@ class AuthService {
       throw ApiError.BadRequest(`User with email ${email} already exists`);
     }
     
-    if (nickname.findOne({ where: { nickname } })) {
+    if (!UserModel.findOne({ where: { nickname } })) {
       throw ApiError.BadRequest(`User with nickname ${nickname} already exists`);
     }
 

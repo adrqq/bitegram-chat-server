@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const UserController = require("../controllers/user-controller");
-const { body } = require("express-validator");
+const { body, param } = require("express-validator");
 
 router.get(
   '/search',
@@ -26,6 +26,25 @@ router.post(
   body('friendId').isString(),
   UserController.sendFriendRequest,
 );
+
+router.post(
+  '/create-chat',
+  body('userId').isString(),
+  body('friendId').isString(),
+  UserController.createChat,
+)
+
+router.get(
+  '/get-chat-by-id',
+  // param('chatId').isString(),
+  UserController.getChatById,
+)
+
+router.get(
+  '/get-chats-info-list',
+  body('chatIds').isArray(),
+  UserController.getChatsInfoList,
+)
 
 
 module.exports = { router };

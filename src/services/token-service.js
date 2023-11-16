@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const sequelize = require('sequelize');
 const { Sequelize } = require('sequelize');
 const db = require('../sequelize/models');
-const TokenModel = require('../sequelize/models/token')(db, sequelize.DataTypes);
+const TokenModel = require('../sequelize/models/token-model')(db, sequelize.DataTypes);
 const ApiError = require('../exceptions/api-error');
 
 class TokenService {
