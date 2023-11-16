@@ -37,6 +37,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     isActivated: {
       type: DataTypes.BOOLEAN,
+      defaultValue: false,
       allowNull: false,
     },
     activationLink: {
@@ -61,6 +62,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ARRAY(DataTypes.STRING),
       defaultValue: [],
     },
+    chats: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+    },
+    groups: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+    }
   }, {
     sequelize,
     modelName: 'User',
